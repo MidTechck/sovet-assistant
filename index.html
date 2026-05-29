@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sovet Link Assistant</title>
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+body{
+    font-family:'Segoe UI',system-ui,sans-serif;
+    background:#ffffff;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+/* HEADER */
+
+.header{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:100;
+    background:linear-gradient(135deg,#03203d 0%,#0a3d6b 100%);
+    padding:14px 18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    box-shadow:0 2px 16px rgba(3,32,61,0.25);
+    border-bottom:1px solid rgba(56,189,248,0.15);
+}
+
+.header-avatar{
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#0284c7,#38bdf8);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    box-shadow:0 0 0 2px rgba(56,189,248,0.3);
+    overflow:hidden;
+}
+
+.header-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border-radius:50%;
+}
+
+.header-info{
+    flex:1;
+}
+
+.header-info h1{
+    color:white;
+    font-size:16px;
+    font-weight:700;
+    letter-spacing:0.3px;
+}
+
+.header-info p{
+    color:#93c5fd;
+    font-size:12px;
+    margin-top:2px;
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+
+.online-dot{
+    width:7px;
+    height:7px;
+    background:#22c55e;
+    border-radius:50%;
+    display:inline-block;
+    animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+    0%,100%{opacity:1;}
+    50%{opacity:0.4;}
+}
+
+/* CHAT AREA */
+
+.chat-area{
+    flex:1;
+    overflow-y:auto;
+    padding:90px 14px 130px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    background:#f8fafc;
+    scrollbar-width:none;
+}
+
+.chat-area::-webkit-scrollbar{
+    display:none;
+}
+
+/* MESSAGES */
+
+.msg{
+    display:flex;
+    align-items:flex-end;
+    gap:8px;
+    max-width:80%;
+    animation:fadeUp 0.25s ease;
+}
+
+@keyframes fadeUp{
+    from{opacity:0;transform:translateY(8px);}
+    to{opacity:1;transform:translateY(0);}
+}
+
+.msg.bot{
+    align-self:flex-start;
+}
+
+.msg.user{
+    align-self:flex-end;
+    flex-direction:row-reverse;
+}
+
+.bubble{
+    padding:10px 14px;
+    border-radius:18px;
+    font-size:14.5px;
+    line-height:1.55;
+    max-width:100%;
+    word-wrap:break-word;
+}
+
+.msg.bot .bubble{
+    background:#ffffff;
+    color:#1e293b;
+    border-radius:4px 18px 18px 18px;
+    border:1px solid #e2e8f0;
+    box-shadow:0 1px 4px rgba(0,0,0,0.06);
+}
+
+.msg.user .bubble{
+    background:linear-gradient(135deg,#0284c7 0%,#0369a1 100%);
+    color:white;
+    border-radius:18px 4px 18px 18px;
+    box-shadow:0 2px 8px rgba(2,132,199,0.25);
+}
+
+.msg-time{
+    font-size:10px;
+    color:#94a3b8;
+    margin-top:3px;
+    padding:0 4px;
+}
+
+.msg.bot .msg-time{text-align:left;}
+.msg.user .msg-time{text-align:right;}
+
+/* TYPING */
+
+.typing{
+    display:flex;
+    align-items:flex-end;
+    gap:8px;
+    align-self:flex-start;
+    animation:fadeUp 0.25s ease;
+}
+
+.typing-bubble{
+    background:#ffffff;
+    border:1px solid #e2e8f0;
+    border-radius:4px 18px 18px 18px;
+    padding:12px 16px;
+    display:flex;
+    gap:5px;
+    align-items:center;
+    box-shadow:0 1px 4px rgba(0,0,0,0.06);
+}
+
+.typing-bubble span{
+    width:6px;
+    height:6px;
+    background:#0284c7;
+    border-radius:50%;
+    animation:bounce 1.2s infinite;
+}
+
+.typing-bubble span:nth-child(2){animation-delay:0.2s;}
+.typing-bubble span:nth-child(3){animation-delay:0.4s;}
+
+@keyframes bounce{
+    0%,60%,100%{transform:translateY(0);}
+    30%{transform:translateY(-5px);}
+}
+
+/* QUICK REPLIES */
+
+.quick-replies{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    padding:0 14px 6px;
+}
+
+.quick-btn{
+    background:#ffffff;
+    border:1.5px solid #0284c7;
+    color:#0284c7;
+    padding:7px 14px;
+    border-radius:20px;
+    font-size:13px;
+    cursor:pointer;
+    transition:0.2s;
+    font-family:inherit;
+    font-weight:500;
+}
+
+.quick-btn:hover,
+.quick-btn:active{
+    background:#0284c7;
+    color:white;
+}
+
+/* INPUT BAR */
+
+.input-bar{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    z-index:100;
+    background:#ffffff;
+    border-top:1px solid #e2e8f0;
+    padding:10px 14px;
+    padding-bottom:max(10px, env(safe-area-inset-bottom));
+}
+
+.input-inner{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#f1f5f9;
+    border:1.5px solid #e2e8f0;
+    border-radius:28px;
+    padding:6px 6px 6px 16px;
+    transition:0.2s;
+}
+
+.input-inner:focus-within{
+    border-color:#0284c7;
+    background:#ffffff;
+}
+
+.input-inner input{
+    flex:1;
+    background:none;
+    border:none;
+    outline:none;
+    color:#1e293b;
+    font-size:15px;
+    font-family:inherit;
+    min-height:34px;
+}
+
+.input-inner input::placeholder{
+    color:#94a3b8;
+}
+
+.send-btn{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#0284c7,#38bdf8);
+    border:none;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    transition:0.2s;
+    box-shadow:0 2px 8px rgba(2,132,199,0.3);
+}
+
+.send-btn:active{
+    transform:scale(0.93);
+}
+
+.send-btn svg{
+    width:18px;
+    height:18px;
+    fill:white;
+}
+
+/* WHATSAPP CTA */
+
+.wa-cta{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:linear-gradient(135deg,#25d366,#1da851);
+    color:white;
+    padding:9px 16px;
+    border-radius:12px;
+    text-decoration:none;
+    font-weight:600;
+    font-size:13.5px;
+    margin-top:6px;
+    box-shadow:0 2px 8px rgba(37,211,102,0.25);
+    transition:0.2s;
+}
+
+.wa-cta:active{
+    transform:scale(0.97);
+}
+
+/* DATE DIVIDER */
+
+.date-divider{
+    text-align:center;
+    color:#94a3b8;
+    font-size:11px;
+    padding:6px 0;
+}
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-avatar">
+        <img src="https://sovetlink.com/images/logo.jpg"
+        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><circle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%230284c7%22/><text x=%2250%25%22 y=%2255%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2218%22>S</text></svg>'"
+        alt="Sovet Link">
+    </div>
+    <div class="header-info">
+        <h1>Sovet Link Assistant</h1>
+        <p><span class="online-dot"></span> Online now</p>
+    </div>
+</div>
+
+<!-- CHAT AREA -->
+<div class="chat-area" id="chat"></div>
+
+<!-- QUICK REPLIES -->
+<div class="quick-replies" id="quick-replies">
+    <button class="quick-btn" onclick="sendQuick('Starlink prices')">Starlink prices</button>
+    <button class="quick-btn" onclick="sendQuick('CCTV installation')">CCTV</button>
+    <button class="quick-btn" onclick="sendQuick('Working hours')">Hours</button>
+    <button class="quick-btn" onclick="sendQuick('Book a service')">Book service</button>
+</div>
+
+<!-- INPUT BAR -->
+<div class="input-bar">
+    <div class="input-inner">
+        <input type="text"
+        id="user-input"
+        placeholder="Ask me anything..."
+        autocomplete="off"
+        onkeydown="if(event.key==='Enter')sendMessage()">
+        <button class="send-btn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+        </button>
+    </div>
+</div>
+
+<script>
+const chat = document.getElementById('chat');
+const input = document.getElementById('user-input');
+let history = [];
+const MEMORY = 7;
+
+function getTime(){
+    return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+
+function addMessage(text, sender, isHTML=false){
+    const wrap = document.createElement('div');
+    wrap.className = `msg ${sender}`;
+
+    const col = document.createElement('div');
+    col.style.cssText = 'display:flex;flex-direction:column;max-width:100%';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    if(isHTML) bubble.innerHTML = text;
+    else bubble.textContent = text;
+
+    const time = document.createElement('div');
+    time.className = 'msg-time';
+    time.textContent = getTime();
+
+    col.appendChild(bubble);
+    col.appendChild(time);
+    wrap.appendChild(col);
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function showTyping(){
+    const el = document.createElement('div');
+    el.className = 'typing';
+    el.id = 'typing';
+    el.innerHTML = `<div class="typing-bubble"><span></span><span></span><span></span></div>`;
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function hideTyping(){
+    const el = document.getElementById('typing');
+    if(el) el.remove();
+}
+
+function getDelay(text){
+    const len = text.length;
+    if(len < 60) return 1100;
+    if(len < 120) return 1200;
+    if(len < 200) return 1600;
+    return 1800;
+}
+
+function sendMessage(){
+    const text = input.value.trim();
+    if(!text) return;
+    input.value = '';
+    document.getElementById('quick-replies').style.display = 'none';
+    addMessage(text, 'user');
+
+    const words = text.split(' ');
+    history = [...history, ...words].slice(-MEMORY);
+
+    showTyping();
+
+    fetch('/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({message: text, history: history})
+    })
+    .then(r => r.json())
+    .then(data => {
+        const delay = getDelay(data.reply);
+        setTimeout(()=>{
+            hideTyping();
+            addMessage(data.reply, 'bot');
+            if(data.whatsapp){
+                setTimeout(()=>{
+                    const wrap = document.createElement('div');
+                    wrap.className = 'msg bot';
+                    const col = document.createElement('div');
+                    col.innerHTML = `<a class="wa-cta" href="https://wa.me/260968252812" target="_blank">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Chat with our team
+                    </a>`;
+                    wrap.appendChild(col);
+                    chat.appendChild(wrap);
+                    chat.scrollTop = chat.scrollHeight;
+                }, 500);
+            }
+        }, delay);
+    })
+    .catch(()=>{
+        setTimeout(()=>{
+            hideTyping();
+            addMessage("Something went wrong. Please try again.", 'bot');
+        }, 1000);
+    });
+}
+
+function sendQuick(text){
+    input.value = text;
+    sendMessage();
+}
+
+// Scroll fix for mobile keyboard
+input.addEventListener('focus', ()=>{
+    setTimeout(()=>{ chat.scrollTop = chat.scrollHeight; }, 400);
+});
+
+window.onload = ()=>{
+    const greetings = [
+        "Hi! I'm the Sovet Link assistant. Ask me about our services, pricing or how to book.",
+        "Hello! What can I help you with today?",
+        "Hi there! Ask me anything about Starlink, CCTV, networking or IT support.",
+        "Hey! Need help with something? I'm here for you."
+    ];
+    setTimeout(()=>{
+        addMessage(greetings[Math.floor(Math.random()*greetings.length)], 'bot');
+    }, 500);
+};
+</script>
+</body>
+</html>
+
